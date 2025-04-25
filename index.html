@@ -205,6 +205,7 @@
         <label for="pdf-upload">Reference PDF:</label>
         <input type="file" id="pdf-upload" class="api-url-input" accept=".pdf" />
         <button id="upload-btn" class="api-url-save">Upload</button>
+        <button id="reset-btn" class="api-url-save" style="background-color: #f44336;">Reset</button>
     </div>
     <div id="upload-status" class="upload-status"></div>
     
@@ -234,6 +235,7 @@
         const usernameInput = document.getElementById('username');
         const saveUsernameBtn = document.getElementById('save-username');
         const uploadBtn = document.getElementById('upload-btn');
+        const resetBtn = document.getElementById('reset-btn');
         const uploadStatus = document.getElementById('upload-status');
         
         // Test button redirect to test.html
@@ -280,6 +282,10 @@
             const formData = new FormData();
             formData.append('pdf', file);
 
+            // Disable upload button and show uploading status
+            uploadBtn.disabled = true;
+            uploadStatus.textContent = 'Uploading...';
+
             fetch(`${apiUrl}/api/${username}/reference`, {
                 method: 'POST',
                 body: formData
@@ -291,6 +297,39 @@
             .catch(error => {
                 uploadStatus.textContent = 'Error uploading reference';
                 console.error('Error:', error);
+            })
+            .finally(() => {
+                // Re-enable upload button after upload completes (success or failure)
+                uploadBtn.disabled = false;
+            });
+        });
+
+        // Handle reset reference
+        resetBtn.addEventListener('click', () => {
+            if (!username) {
+                uploadStatus.textContent = 'Please set a username first';
+                return;
+            }
+
+            // Disable reset button and show resetting status
+            resetBtn.disabled = true;
+            uploadStatus.textContent = 'Resetting...';
+
+            fetch(`${apiUrl}/api/${username}/reference`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                uploadStatus.textContent = 'Reference cleared successfully';
+                document.getElementById('pdf-upload').value = ''; // Clear file input
+            })
+            .catch(error => {
+                uploadStatus.textContent = 'Error clearing reference';
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Re-enable reset button after reset completes
+                resetBtn.disabled = false;
             });
         });
         
