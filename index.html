@@ -1,111 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 15px;
+            line-height: 1.6;
+            box-sizing: border-box;
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                max-width: 800px;
+                padding: 20px;
+            }
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .active {
+            background-color: #4CAF50;
+        }
+        .inactive {
+            background-color: #F44336;
+        }
+        .text-container {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            margin-bottom: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+        }
+        .copy-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 0;
+            cursor: pointer;
+            border-radius: 4px;
+            vertical-align: middle;
+        }
+        .copy-btn:hover {
+            background-color: #45a049;
+        }
+        .test-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin-left: 20px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .test-btn:hover {
+            background-color: #0b7dda;
+        }
+        .status-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .status-left {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .messages {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .message {
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            word-wrap: break-word;
+        }
+        .api-url-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 576px) {
+            .api-url-container {
+                flex-direction: row;
+                align-items: center;
+            }
+        }
+        
+        .api-url-container label {
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        @media (min-width: 576px) {
+            .api-url-container label {
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+        }
+        
+        .api-url-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        @media (min-width: 576px) {
+            .api-url-input {
+                width: 70%;
+                margin-bottom: 0;
+                margin-right: 10px;
+            }
+        }
+        
+        .api-url-save {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        @media (min-width: 576px) {
+            .api-url-save {
+                width: auto;
+            }
+        }
+        
+        .header-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        
+        .header-container h2 {
+            margin: 0;
+        }
+    </style>
 </head>
-<body>
-  <div role="region" aria-label="Question" class="quiz_sortable question_holder " id="" style="" data-group-id="">
-    <div style="display: block; height: 1px; overflow: hidden;">&nbsp;</div>
-    <a name="question_18593458"></a>
-    <div class="display_question question multiple_choice_question" id="question_18593458">
-      
-  <div class="move">
-    <a tabindex="0" class="draggable-handle" role="button">
-      <i class="icon-drag-handle">
-        <span class="screenreader-only">Move To...</span>
-        <span class="accessibility-warning screenreader-only">
-          This element is a more accessible alternative to drag &amp; drop reordering. Press Enter or Space to move this question.
-        </span>
-      </i>
-    </a>
-  </div>
-  
-  
-      <div class="header">
-        <span class="name question_name" role="heading" aria-level="2">Question 1</span>
-        <span class="question_points_holder" style="">
-          <span class="points question_points">1</span> pts
-      </span>
-      </div>
-        <div class="links" style="display: none;">
-          <a href="#" class="edit_question_link no-hover" title="Edit this Question"><i class="icon-edit standalone-icon"><span class="screenreader-only">Edit this Question</span></i></a>
-            <a href="#" class="delete_question_link no-hover" title="Delete this Question"><i class="icon-end standalone-icon"><span class="screenreader-only">Delete this Question</span></i></a>
+<body>    
+    <div class="status-container">
+        <div class="status-left">
+            <div class="status-indicator active" id="status-indicator"></div>
+            <span id="status-text">Status: Active</span>
         </div>
-      <div style="display: none;">
-        <span class="regrade_option"></span>
-        <span class="regrade_disabled">0</span>
-        <span class="question_type">multiple_choice_question</span>
-        <span class="answer_selection_type"></span>
-          <a href="/courses/100814/quizzes/1379231/questions/18593458" class="update_question_url">&nbsp;</a>
-        <span class="assessment_question_id">29383329</span>
-      </div>
-      <div class="text">
-        <div class="original_question_text" style="display: none;">
-          <textarea disabled="" style="display: none;" name="text_after_answers" class="textarea_text_after_answers"></textarea>
-          <textarea disabled="" style="display: none;" name="question_text" class="textarea_question_text">Symbol used for multi-line comment</textarea>
-        </div>
-        <div id="question_18593458_question_text" class="question_text user_content enhanced">
-            Symbol used for multi-line comment
-        </div>
-        <div class="answers">
-                <fieldset>
-                  <legend class="screenreader-only">
-                    Group of answer choices
-                  </legend>
-                  
-  <div class="answer">
-      <label class="answer_row user_content enhanced">
-        <span class="answer_input">
-            <input type="radio" class="question_input" name="question_18593458" value="62229" id="question_18593458_answer_62229" aria-labelledby="question_18593458_answer_62229_label" aria-label="">
-        </span>
-        <div class="answer_label" id="question_18593458_answer_62229_label">
-          /**/
-        </div>
-      </label>
-  </div>
-  
-  <div class="answer">
-      <label class="answer_row user_content enhanced">
-        <span class="answer_input">
-            <input type="radio" class="question_input" name="question_18593458" value="38305" id="question_18593458_answer_38305" aria-labelledby="question_18593458_answer_38305_label" aria-label="">
-        </span>
-        <div class="answer_label" id="question_18593458_answer_38305_label">
-          /””/
-        </div>
-      </label>
-  </div>
-  
-  <div class="answer">
-      <label class="answer_row user_content enhanced">
-        <span class="answer_input">
-            <input type="radio" class="question_input" name="question_18593458" value="57394" id="question_18593458_answer_57394" aria-labelledby="question_18593458_answer_57394_label" aria-label="">
-        </span>
-        <div class="answer_label" id="question_18593458_answer_57394_label">
-          /??/
-        </div>
-      </label>
-  </div>
-  
-  <div class="answer">
-      <label class="answer_row user_content enhanced">
-        <span class="answer_input">
-            <input type="radio" class="question_input" name="question_18593458" value="22498" id="question_18593458_answer_22498" aria-labelledby="question_18593458_answer_22498_label" aria-label="">
-        </span>
-        <div class="answer_label" id="question_18593458_answer_22498_label">
-          /::/
-        </div>
-      </label>
-  </div>
-  
-                </fieldset>
-        </div>
-        <div class="after_answers">
-        </div>
-      </div>
-      <div class="clear"></div>
+        <button class="test-btn" id="test-btn">Test</button>
     </div>
-  </div>
+    
+    <div class="api-url-container">
+        <label for="username">Username:</label>
+        <input type="text" id="username" class="api-url-input" placeholder="Enter your username">
+        <button id="save-username" class="api-url-save">Save</button>
+    </div>
+    
+    <div class="header-container">
+        <h2>Latest</h2>
+        <button class="copy-btn" id="copy-btn">Copy</button>
+    </div>
+    <div class="text-container" id="template-text"></div>
+    
+    <h2 id="previous-heading" style="display: none;">Previous</h2>
+    <div class="messages" id="messages-container" style="display: none;">
+        <!-- Messages will be added here -->
+    </div>
+
+    <script>
+        // Set initial variables
+        let isActive = true;
+        let latestMessage = "No messages received yet.";
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const templateText = document.getElementById('template-text');
+        const copyBtn = document.getElementById('copy-btn');
+        const testBtn = document.getElementById('test-btn');
+        const messagesContainer = document.getElementById('messages-container');
+        const usernameInput = document.getElementById('username');
+        const saveUsernameBtn = document.getElementById('save-username');
+        
+        // Test button redirect to test.html
+        testBtn.addEventListener('click', () => {
+            window.open('test.html', '_blank');
+        });
+        
+        // Hardcoded API URL
+        const apiUrl = 'https://webhook-api.onrender.com';
+        
+        // Load saved username from localStorage
+        let username = localStorage.getItem('username') || '';
+        usernameInput.value = username;
+        
+        // Save username
+        saveUsernameBtn.addEventListener('click', () => {
+            username = usernameInput.value.trim();
+            if (username) {
+                localStorage.setItem('username', username);
+                alert('Username saved!');
+                
+                // Restart the webhook listener with new username
+                restartWebhookListener();
+            } else {
+                alert('Please enter a valid username');
+            }
+        });
+        
+        // Function to update status display only (doesn't change behavior)
+        function updateStatusDisplay(active) {
+            if (active) {
+                statusIndicator.classList.remove('inactive');
+                statusIndicator.classList.add('active');
+                statusText.textContent = 'Status: Active';
+            } else {
+                statusIndicator.classList.remove('active');
+                statusIndicator.classList.add('inactive');
+                statusText.textContent = 'Status: Inactive (Tab Hidden)';
+            }
+        }
+        
+        // Copy button functionality
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(templateText.textContent)
+                .then(() => {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+        });
+        
+        // Webhook handling
+        let webhookInterval;
+        
+        function startWebhookListener() {
+            // Clear any existing messages when starting
+            messagesContainer.innerHTML = '<div class="message">Listening for messages for username: ' + username + '...</div>';
+            
+            // Poll the API for new messages
+            webhookInterval = setInterval(() => {
+                if (isActive) {
+                    fetchWebhookData();
+                }
+            }, 3000); // Check every 3 seconds
+        }
+        
+        function stopWebhookListener() {
+            clearInterval(webhookInterval);
+        }
+        
+        function restartWebhookListener() {
+            stopWebhookListener();
+            startWebhookListener();
+        }
+        
+        // Listen for visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab is hidden
+                isActive = false;
+                updateStatusDisplay(false);
+            } else {
+                // Tab is visible again
+                isActive = true;
+                updateStatusDisplay(true);
+                // Fetch immediately when becoming visible
+                if (username) {
+                    fetchWebhookData();
+                }
+            }
+        });
+        
+        function fetchWebhookData() {
+            if (!username) {
+                messagesContainer.innerHTML = '<div class="message">Please enter a username first</div>';
+                templateText.textContent = "No messages received yet.";
+                return;
+            }
+            
+            // Use the hardcoded API URL with the username parameter
+            fetch(`${apiUrl}/api/${username}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Add the received message to the messages container
+                if (data && data.data && data.data.text) {
+                    // Update the latest message display
+                    latestMessage = data.data.text;
+                    templateText.textContent = latestMessage;
+                    
+                    // Add to message history
+                    addMessage(data.data.text);
+                } else if (data && data.data && data.data.text === "") {
+                    // Handle empty message
+                    templateText.textContent = "Received empty message.";
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching webhook data:', error);
+                // Show error message
+                messagesContainer.innerHTML = '<div class="message">Error connecting to API. Please check your username.</div>';
+                templateText.textContent = "Error loading messages.";
+            });
+        }
+        
+        function addMessage(text) {
+            // Check if the first message already contains this text to avoid duplicates
+            const existingMessages = document.querySelectorAll('.message');
+            if (existingMessages.length > 0 && existingMessages[0].textContent === text) {
+                return; // Skip if duplicate
+            }
+            
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.textContent = text;
+            
+            // Add to the beginning of the list
+            messagesContainer.insertBefore(messageElement, messagesContainer.firstChild);
+            
+            // Show the messages section if it was hidden
+            document.getElementById('previous-heading').style.display = 'block';
+            messagesContainer.style.display = 'block';
+        }
+        
+        // Initialize
+        templateText.textContent = latestMessage; // Set initial template text
+        
+        // Start listening immediately if username is set
+        if (username) {
+            startWebhookListener();
+        } else {
+            messagesContainer.innerHTML = '<div class="message">Please enter a username to start listening</div>';
+            document.getElementById('previous-heading').style.display = 'block';
+            messagesContainer.style.display = 'block';
+        }
+    </script>
 </body>
-</html>
+</html> 
