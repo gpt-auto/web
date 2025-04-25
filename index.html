@@ -94,18 +94,6 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .messages {
-            margin-top: 30px;
-            border-top: 1px solid #ddd;
-            padding-top: 15px;
-        }
-        .message {
-            background-color: #f1f1f1;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            word-wrap: break-word;
-        }
         .api-url-container {
             margin-bottom: 20px;
             display: flex;
@@ -194,15 +182,10 @@
     </div>
     
     <div class="header-container">
-        <h2>Latest</h2>
+        <h2>Latest Message</h2>
         <button class="copy-btn" id="copy-btn">Copy</button>
     </div>
     <div class="text-container" id="template-text"></div>
-    
-    <h2 id="previous-heading" style="display: none;">Previous</h2>
-    <div class="messages" id="messages-container" style="display: none;">
-        <!-- Messages will be added here -->
-    </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
@@ -215,7 +198,6 @@
         const templateText = document.getElementById('template-text');
         const copyBtn = document.getElementById('copy-btn');
         const testBtn = document.getElementById('test-btn');
-        const messagesContainer = document.getElementById('messages-container');
         const usernameInput = document.getElementById('username');
         const saveUsernameBtn = document.getElementById('save-username');
         
@@ -276,8 +258,7 @@
         // Socket.io connection handling
         function startSocketConnection() {
             if (!username) {
-                messagesContainer.innerHTML = '<div class="message">Please enter a username first</div>';
-                templateText.textContent = "No messages received yet.";
+                templateText.textContent = "Please enter a username first";
                 return;
             }
             
@@ -288,7 +269,7 @@
             socket.on('connect', () => {
                 socket.emit('join', username);
                 console.log('Connected to server');
-                messagesContainer.innerHTML = '<div class="message">Listening for messages for username: ' + username + '...</div>';
+                templateText.textContent = "Listening for messages...";
             });
             
             // Listen for new messages
@@ -297,19 +278,13 @@
                     // Update the latest message display
                     latestMessage = message.text;
                     templateText.textContent = latestMessage;
-                    
-                    // Add to message history
-                    addMessage(message.text);
                 }
             });
             
             socket.on('disconnect', () => {
                 console.log('Disconnected from server');
-                messagesContainer.innerHTML = '<div class="message">Disconnected from server. Reconnecting...</div>';
+                templateText.textContent = "Disconnected from server. Reconnecting...";
             });
-            
-            // Fetch existing messages
-            fetchExistingMessages();
         }
         
         function stopSocketConnection() {
@@ -321,45 +296,6 @@
         function restartSocketConnection() {
             stopSocketConnection();
             startSocketConnection();
-        }
-        
-        // Function to fetch existing messages
-        function fetchExistingMessages() {
-            if (!username) return;
-            
-            fetch(`${apiUrl}/api/${username}/all`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.data && data.data.length > 0) {
-                        // Display messages in reverse (newest first)
-                        data.data.reverse().forEach(message => {
-                            addMessage(message.text);
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching messages:', error);
-                    messagesContainer.innerHTML = '<div class="message">Error loading message history</div>';
-                });
-        }
-        
-        function addMessage(text) {
-            // Check if the first message already contains this text to avoid duplicates
-            const existingMessages = document.querySelectorAll('.message');
-            if (existingMessages.length > 0 && existingMessages[0].textContent === text) {
-                return; // Skip if duplicate
-            }
-            
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('message');
-            messageElement.textContent = text;
-            
-            // Add to the beginning of the list
-            messagesContainer.insertBefore(messageElement, messagesContainer.firstChild);
-            
-            // Show the messages section if it was hidden
-            document.getElementById('previous-heading').style.display = 'block';
-            messagesContainer.style.display = 'block';
         }
         
         // Listen for visibility changes
@@ -386,9 +322,7 @@
         if (username) {
             startSocketConnection();
         } else {
-            messagesContainer.innerHTML = '<div class="message">Please enter a username to start listening</div>';
-            document.getElementById('previous-heading').style.display = 'block';
-            messagesContainer.style.display = 'block';
+            templateText.textContent = "Please enter a username to start listening";
         }
     </script>
 </body>
