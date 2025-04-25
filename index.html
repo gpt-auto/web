@@ -201,13 +201,13 @@
     </div>
 
     <!-- Updated PDF Upload Section -->
-    <div class="api-url-container">
+    <!-- <div class="api-url-container">
         <label for="pdf-upload">Reference PDF:</label>
         <input type="file" id="pdf-upload" class="api-url-input" accept=".pdf" />
         <button id="upload-btn" class="api-url-save">Upload</button>
         <button id="reset-btn" class="api-url-save" style="background-color: #f44336;">Reset</button>
     </div>
-    <div id="upload-status" class="upload-status"></div>
+    <div id="upload-status" class="upload-status"></div> -->
     
     <div class="header-container">
         <h2>Clipboard</h2>
@@ -215,10 +215,10 @@
     </div>
     <div class="text-container" id="template-text"></div>
 
-    <div class="header-container">
+    <!-- <div class="header-container">
         <h2>Dumb AI Assistant</h2>
     </div>
-    <div class="text-container" id="ai-text"></div>
+    <div class="text-container" id="ai-text"></div> -->
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
@@ -229,7 +229,7 @@
         const statusIndicator = document.getElementById('status-indicator');
         const statusText = document.getElementById('status-text');
         const templateText = document.getElementById('template-text');
-        const aiText = document.getElementById('ai-text');
+        /* const aiText = document.getElementById('ai-text'); */
         const copyBtn = document.getElementById('copy-btn');
         const testBtn = document.getElementById('test-btn');
         const usernameInput = document.getElementById('username');
@@ -265,7 +265,7 @@
         });
 
         // Handle PDF upload
-        uploadBtn.addEventListener('click', () => {
+        /* uploadBtn.addEventListener('click', () => {
             const fileInput = document.getElementById('pdf-upload');
             const file = fileInput.files[0];
             
@@ -335,7 +335,7 @@
                 // Re-enable reset button after reset completes
                 resetBtn.disabled = false;
             });
-        });
+        }); */
         
         // Function to update status display only (doesn't change behavior)
         function updateStatusDisplay(active) {
@@ -369,7 +369,7 @@
         function startSocketConnection() {
             if (!username) {
                 templateText.textContent = "Please enter a username first";
-                aiText.textContent = "Please enter a username first";
+                /* aiText.textContent = "Please enter a username first"; */
                 return;
             }
             
@@ -386,34 +386,34 @@
             socket.on('connect', () => {
                 socket.emit('join', username);
                 templateText.textContent = "Listening for messages...";
-                aiText.textContent = "Listening for messages...";
+                /* aiText.textContent = "Listening for messages..."; */
             });
             
             // Listen for new messages
             socket.on('new_message', (message) => {
                 if (message && message.originalText) {
                     latestMessage = message.originalText;
-                    const aiMessage = message.processedText || 'No AI response available';
+                    /* const aiMessage = message.processedText || 'No AI response available'; */
                     templateText.textContent = latestMessage;
-                    aiText.textContent = aiMessage;
+                    /* aiText.textContent = aiMessage; */
                 }
             });
             
             socket.on('disconnect', () => {
                 templateText.textContent = "Disconnected from server. Reconnecting...";
-                aiText.textContent = "Disconnected from server. Reconnecting...";
+                /* aiText.textContent = "Disconnected from server. Reconnecting..."; */
             });
 
             socket.on('error', (error) => {
                 console.error('Connection error:', error);
                 templateText.textContent = "Connection error. Please refresh the page.";
-                aiText.textContent = "Connection error. Please refresh the page.";
+                /* aiText.textContent = "Connection error. Please refresh the page."; */
             });
 
             socket.on('connect_error', (error) => {
                 console.error('Connection error:', error);
                 templateText.textContent = "Connection error. Please check your internet connection.";
-                aiText.textContent = "Connection error. Please check your internet connection.";
+                /* aiText.textContent = "Connection error. Please check your internet connection."; */
             });
         }
         
@@ -447,14 +447,14 @@
         
         // Initialize
         templateText.textContent = latestMessage; // Set initial template text
-        aiText.textContent = latestMessage; // Set initial AI text
+        /* aiText.textContent = latestMessage; // Set initial AI text */
         
         // Start listening immediately if username is set
         if (username) {
             startSocketConnection();
         } else {
             templateText.textContent = "Please enter a username to start listening";
-            aiText.textContent = "Please enter a username to start listening";
+            /* aiText.textContent = "Please enter a username to start listening"; */
         }
     </script>
 </body>
