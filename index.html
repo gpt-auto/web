@@ -330,11 +330,18 @@
                 return;
             }
             
-            // Initialize Socket.io connection
-            socket = io(apiUrl);
+            // Initialize Socket.io connection with explicit configuration
+            socket = io(apiUrl, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
+                timeout: 20000
+            });
             
             // Connect to the server and join the room
             socket.on('connect', () => {
+                console.log('Socket connected, joining room:', username);
                 socket.emit('join', username);
                 console.log('Connected to server');
                 templateText.textContent = "Listening for messages...";
@@ -343,15 +350,19 @@
             
             // Listen for new messages
             socket.on('new_message', (message) => {
-                if (message && message.text) {
+                console.log('Received new_message event:', message);
+                if (message && message.originalText) {
                     // Update the latest message display
                     latestMessage = message.originalText;
-                    aiMessage = message.processedText;
+                    const aiMessage = message.processedText || 'No AI response available';
+
+                    console.log('Updating UI with message:', latestMessage);
+                    console.log('Updating UI with AI response:', aiMessage);
 
                     templateText.textContent = latestMessage;
                     aiText.textContent = aiMessage;
-
-                    console.log('Received new message:', "triggered");
+                } else {
+                    console.log('Received invalid message format:', message);
                 }
             });
             
@@ -359,6 +370,18 @@
                 console.log('Disconnected from server');
                 templateText.textContent = "Disconnected from server. Reconnecting...";
                 aiText.textContent = "Disconnected from server. Reconnecting...";
+            });
+
+            socket.on('error', (error) => {
+                console.error('Socket error:', error);
+                templateText.textContent = "Connection error. Please refresh the page.";
+                aiText.textContent = "Connection error. Please refresh the page.";
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Socket connection error:', error);
+                templateText.textContent = "Connection error. Please check your internet connection.";
+                aiText.textContent = "Connection error. Please check your internet connection.";
             });
         }
         
