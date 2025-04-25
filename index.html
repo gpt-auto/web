@@ -292,10 +292,14 @@
             })
             .then(response => response.json())
             .then(data => {
-                uploadStatus.textContent = 'Reference uploaded successfully';
+                if (data.error) {
+                    uploadStatus.textContent = `Error: ${data.error}${data.details ? ' - ' + data.details : ''}`;
+                } else {
+                    uploadStatus.textContent = 'Reference uploaded successfully';
+                }
             })
             .catch(error => {
-                uploadStatus.textContent = 'Error uploading reference';
+                uploadStatus.textContent = 'Error uploading reference. Please try again.';
                 console.error('Error:', error);
             })
             .finally(() => {
