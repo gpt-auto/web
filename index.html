@@ -341,45 +341,34 @@
             
             // Connect to the server and join the room
             socket.on('connect', () => {
-                console.log('Socket connected, joining room:', username);
                 socket.emit('join', username);
-                console.log('Connected to server');
                 templateText.textContent = "Listening for messages...";
                 aiText.textContent = "Listening for messages...";
             });
             
             // Listen for new messages
             socket.on('new_message', (message) => {
-                console.log('Received new_message event:', message);
                 if (message && message.originalText) {
-                    // Update the latest message display
                     latestMessage = message.originalText;
                     const aiMessage = message.processedText || 'No AI response available';
-
-                    console.log('Updating UI with message:', latestMessage);
-                    console.log('Updating UI with AI response:', aiMessage);
-
                     templateText.textContent = latestMessage;
                     aiText.textContent = aiMessage;
-                } else {
-                    console.log('Received invalid message format:', message);
                 }
             });
             
             socket.on('disconnect', () => {
-                console.log('Disconnected from server');
                 templateText.textContent = "Disconnected from server. Reconnecting...";
                 aiText.textContent = "Disconnected from server. Reconnecting...";
             });
 
             socket.on('error', (error) => {
-                console.error('Socket error:', error);
+                console.error('Connection error:', error);
                 templateText.textContent = "Connection error. Please refresh the page.";
                 aiText.textContent = "Connection error. Please refresh the page.";
             });
 
             socket.on('connect_error', (error) => {
-                console.error('Socket connection error:', error);
+                console.error('Connection error:', error);
                 templateText.textContent = "Connection error. Please check your internet connection.";
                 aiText.textContent = "Connection error. Please check your internet connection.";
             });
