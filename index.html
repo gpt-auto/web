@@ -204,10 +204,12 @@
         <!-- Messages will be added here -->
     </div>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         // Set initial variables
         let isActive = true;
         let latestMessage = "No messages received yet.";
+        let socket;
         const statusIndicator = document.getElementById('status-indicator');
         const statusText = document.getElementById('status-text');
         const templateText = document.getElementById('template-text');
@@ -236,8 +238,8 @@
                 localStorage.setItem('username', username);
                 alert('Username saved!');
                 
-                // Restart the webhook listener with new username
-                restartWebhookListener();
+                // Restart the socket connection with new username
+                restartSocketConnection();
             } else {
                 alert('Please enter a valid username');
             }
@@ -271,87 +273,74 @@
                 });
         });
         
-        // Webhook handling
-        let webhookInterval;
-        
-        function startWebhookListener() {
-            // Clear any existing messages when starting
-            messagesContainer.innerHTML = '<div class="message">Listening for messages for username: ' + username + '...</div>';
-            
-            // Poll the API for new messages
-            webhookInterval = setInterval(() => {
-                if (isActive) {
-                    fetchWebhookData();
-                }
-            }, 3000); // Check every 3 seconds
-        }
-        
-        function stopWebhookListener() {
-            clearInterval(webhookInterval);
-        }
-        
-        function restartWebhookListener() {
-            stopWebhookListener();
-            startWebhookListener();
-        }
-        
-        // Listen for visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // Tab is hidden
-                isActive = false;
-                updateStatusDisplay(false);
-            } else {
-                // Tab is visible again
-                isActive = true;
-                updateStatusDisplay(true);
-                // Fetch immediately when becoming visible
-                if (username) {
-                    fetchWebhookData();
-                }
-            }
-        });
-        
-        function fetchWebhookData() {
+        // Socket.io connection handling
+        function startSocketConnection() {
             if (!username) {
                 messagesContainer.innerHTML = '<div class="message">Please enter a username first</div>';
                 templateText.textContent = "No messages received yet.";
                 return;
             }
             
-            // Use the hardcoded API URL with the username parameter
-            fetch(`${apiUrl}/api/${username}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Add the received message to the messages container
-                if (data && data.data && data.data.text) {
+            // Initialize Socket.io connection
+            socket = io(apiUrl);
+            
+            // Connect to the server and join the room
+            socket.on('connect', () => {
+                socket.emit('join', username);
+                console.log('Connected to server');
+                messagesContainer.innerHTML = '<div class="message">Listening for messages for username: ' + username + '...</div>';
+            });
+            
+            // Listen for new messages
+            socket.on('new_message', (message) => {
+                if (message && message.text) {
                     // Update the latest message display
-                    latestMessage = data.data.text;
+                    latestMessage = message.text;
                     templateText.textContent = latestMessage;
                     
                     // Add to message history
-                    addMessage(data.data.text);
-                } else if (data && data.data && data.data.text === "") {
-                    // Handle empty message
-                    templateText.textContent = "Received empty message.";
+                    addMessage(message.text);
                 }
-            })
-            .catch(error => {
-                console.error('Error fetching webhook data:', error);
-                // Show error message
-                messagesContainer.innerHTML = '<div class="message">Error connecting to API. Please check your username.</div>';
-                templateText.textContent = "Error loading messages.";
             });
+            
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+                messagesContainer.innerHTML = '<div class="message">Disconnected from server. Reconnecting...</div>';
+            });
+            
+            // Fetch existing messages
+            fetchExistingMessages();
+        }
+        
+        function stopSocketConnection() {
+            if (socket) {
+                socket.disconnect();
+            }
+        }
+        
+        function restartSocketConnection() {
+            stopSocketConnection();
+            startSocketConnection();
+        }
+        
+        // Function to fetch existing messages
+        function fetchExistingMessages() {
+            if (!username) return;
+            
+            fetch(`${apiUrl}/api/${username}/all`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        // Display messages in reverse (newest first)
+                        data.data.reverse().forEach(message => {
+                            addMessage(message.text);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                    messagesContainer.innerHTML = '<div class="message">Error loading message history</div>';
+                });
         }
         
         function addMessage(text) {
@@ -373,12 +362,29 @@
             messagesContainer.style.display = 'block';
         }
         
+        // Listen for visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Tab is hidden
+                isActive = false;
+                updateStatusDisplay(false);
+            } else {
+                // Tab is visible again
+                isActive = true;
+                updateStatusDisplay(true);
+                // Reconnect socket when becoming visible
+                if (username) {
+                    restartSocketConnection();
+                }
+            }
+        });
+        
         // Initialize
         templateText.textContent = latestMessage; // Set initial template text
         
         // Start listening immediately if username is set
         if (username) {
-            startWebhookListener();
+            startSocketConnection();
         } else {
             messagesContainer.innerHTML = '<div class="message">Please enter a username to start listening</div>';
             document.getElementById('previous-heading').style.display = 'block';

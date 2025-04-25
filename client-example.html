@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Messaging Example</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .message-container {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      height: 300px;
+      overflow-y: auto;
+    }
+    .message {
+      padding: 5px;
+      margin-bottom: 5px;
+      background-color: #f1f1f1;
+      border-radius: 5px;
+    }
+    input, button {
+      padding: 8px;
+      margin-top: 10px;
+    }
+    input {
+      width: 70%;
+    }
+    button {
+      width: 25%;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Real-time Messaging Example</h1>
+  
+  <div>
+    <label for="username">Username:</label>
+    <input type="text" id="username" placeholder="Enter username">
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+  
+  <div id="message-form" style="display: none;">
+    <label for="message">Message:</label>
+    <input type="text" id="message" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+  
+  <div class="message-container" id="messages"></div>
+  
+  <script>
+    let socket;
+    let currentUsername;
+    
+    // Function to join a room (username)
+    function joinRoom() {
+      const username = document.getElementById('username').value.trim();
+      if (!username) {
+        alert('Please enter a username');
+        return;
+      }
+      
+      currentUsername = username;
+      
+      // Initialize Socket.io connection
+      socket = io('http://localhost:3000'); // Connect to local server
+      
+      // Connect to the server and join the room
+      socket.on('connect', () => {
+        socket.emit('join', username);
+        console.log('Connected to server');
+        
+        // Show message form
+        document.getElementById('message-form').style.display = 'block';
+        
+        // Load existing messages
+        fetchExistingMessages();
+      });
+      
+      // Listen for new messages
+      socket.on('new_message', (message) => {
+        displayMessage(message);
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+      });
+    }
+    
+    // Function to send a message
+    function sendMessage() {
+      const messageText = document.getElementById('message').value.trim();
+      if (!messageText) return;
+      
+      // Send message to server via REST API
+      fetch(`http://localhost:3000/api/${currentUsername}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: messageText })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Message sent:', data);
+        document.getElementById('message').value = '';
+      })
+      .catch(error => console.error('Error sending message:', error));
+    }
+    
+    // Function to fetch existing messages
+    function fetchExistingMessages() {
+      fetch(`http://localhost:3000/api/${currentUsername}/all`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.data && data.data.length > 0) {
+            // Display messages in reverse (newest last)
+            data.data.reverse().forEach(message => {
+              displayMessage(message);
+            });
+          }
+        })
+        .catch(error => console.error('Error fetching messages:', error));
+    }
+    
+    // Function to display a message
+    function displayMessage(message) {
+      const messagesContainer = document.getElementById('messages');
+      const messageElement = document.createElement('div');
+      messageElement.className = 'message';
+      
+      const time = new Date(message.timestamp).toLocaleTimeString();
+      messageElement.innerHTML = `
+        <strong>${time}</strong>: ${message.text}
+      `;
+      
+      messagesContainer.appendChild(messageElement);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  </script>
+</body>
+</html> 
