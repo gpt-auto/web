@@ -462,8 +462,8 @@
                     
                     // Remove the instructional text from display but keep it in latestMessage
                     if (displayContent.startsWith("I will consecutively send you questions")) {
-                        const promptText = displayContent.split("\n\n")[0] + "\n\n";
-                        displayContent = displayContent.substring(promptText.length).trim();
+                        const promptEndIndex = displayContent.indexOf("search online.\n\n") + "search online.\n\n".length;
+                        displayContent = displayContent.substring(promptEndIndex).trim();
                         if (!displayContent) {
                             displayContent = "Waiting for questions...";
                         }
