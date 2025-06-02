@@ -359,6 +359,12 @@
                     setTimeout(() => {
                         copyBtn.textContent = originalText;
                     }, 2000);
+                    // Launch ChatGPT mobile app using deep linking
+                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        window.location.href = 'chatgpt://';
+                    } else if (/Android/i.test(navigator.userAgent)) {
+                        window.location.href = 'com.openai.chatgpt://';
+                    }
                 })
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
