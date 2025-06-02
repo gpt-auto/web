@@ -351,24 +351,69 @@
         }
         
         // Copy button functionality
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(templateText.textContent)
-                .then(() => {
+        copyBtn.addEventListener('click', async () => {
+            try {
+                const textContent = templateText.textContent;
+                
+                // Extract image URLs from the text content
+                const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
+                const imageUrls = textContent.match(imageUrlRegex) || [];
+                
+                if (imageUrls.length > 0) {
+                    // Create a new ClipboardItem for each image
+                    const imageBlobs = await Promise.all(
+                        imageUrls.map(async (imageUrl) => {
+                            try {
+                                const response = await fetch(imageUrl);
+                                const blob = await response.blob();
+                                return new ClipboardItem({ [blob.type]: blob });
+                            } catch (err) {
+                                console.error('Failed to fetch image:', err);
+                                return null;
+                            }
+                        })
+                    );
+                    
+                    // Filter out any failed image fetches
+                    const validImageBlobs = imageBlobs.filter(blob => blob !== null);
+                    
+                    // Add text as a separate item
+                    const textBlob = new Blob([textContent], { type: 'text/plain' });
+                    validImageBlobs.push(new ClipboardItem({ 'text/plain': textBlob }));
+                    
+                    // Write all items to clipboard
+                    await navigator.clipboard.write(validImageBlobs);
+                } else {
+                    // If no images, just copy text
+                    await navigator.clipboard.writeText(textContent);
+                }
+
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+
+                // Launch ChatGPT mobile app using deep linking
+                if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                    window.location.href = 'chatgpt://';
+                } else if (/Android/i.test(navigator.userAgent)) {
+                    window.location.href = 'com.openai.chatgpt://';
+                }
+            } catch (err) {
+                console.error('Failed to copy content: ', err);
+                // Fallback to text-only copy if image copy fails
+                try {
+                    await navigator.clipboard.writeText(templateText.textContent);
                     const originalText = copyBtn.textContent;
                     copyBtn.textContent = "Copied!";
                     setTimeout(() => {
                         copyBtn.textContent = originalText;
                     }, 2000);
-                    // Launch ChatGPT mobile app using deep linking
-                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-                        window.location.href = 'chatgpt://';
-                    } else if (/Android/i.test(navigator.userAgent)) {
-                        window.location.href = 'com.openai.chatgpt://';
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                });
+                } catch (fallbackErr) {
+                    console.error('Failed to copy text: ', fallbackErr);
+                }
+            }
         });
         
         // Socket.io connection handling
