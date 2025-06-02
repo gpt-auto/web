@@ -368,23 +368,9 @@
         // Function to copy image to clipboard
         async function copyImageToClipboard(imageUrl) {
             try {
-                const response = await fetch(imageUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                        'Accept-Encoding': 'gzip, deflate, br',
-                        'Accept-Language': 'en-US,en;q=0.9',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache',
-                        'Sec-Fetch-Dest': 'image',
-                        'Sec-Fetch-Mode': 'no-cors',
-                        'Sec-Fetch-Site': 'cross-site',
-                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-                    },
-                    mode: 'cors',
-                    credentials: 'omit'
-                });
-
+                // Use our backend to fetch the image
+                const response = await fetch(`${apiUrl}/api/fetch-image?url=${encodeURIComponent(imageUrl)}`);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -401,6 +387,10 @@
                         [blob.type]: blob
                     })
                 ]);
+
+                // Show preview
+                imagePreview.src = URL.createObjectURL(blob);
+                imagePreview.style.display = 'block';
                 
                 return true;
             } catch (err) {
