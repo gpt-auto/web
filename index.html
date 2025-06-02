@@ -361,7 +361,7 @@
         
         // Function to extract image URLs from text
         function extractImageUrls(text) {
-            const urlRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
+            const urlRegex = /(https?:\/\/[^\s]+\/preview\?verifier=[^\s]+)/gi;
             return text.match(urlRegex) || [];
         }
 
