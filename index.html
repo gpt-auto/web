@@ -461,7 +461,7 @@
                     let displayContent = latestMessage;
                     
                     // Remove the instructional text from display but keep it in latestMessage
-                    if (displayContent.startsWith("help me answer the questions")) {
+                    if (displayContent.startsWith("I will consecutively send you questions")) {
                         displayContent = displayContent.split("\n").slice(1).join("\n").trim();
                         if (!displayContent) {
                             displayContent = "Waiting for questions...";
