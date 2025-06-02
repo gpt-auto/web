@@ -356,8 +356,8 @@
                 const textContent = templateText.textContent;
                 console.log('Text content:', textContent);
                 
-                // Extract image URLs from the text content - updated regex to be more permissive
-                const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|preview))/gi;
+                // Updated regex to better match Canvas URLs and other image formats
+                const imageUrlRegex = /(https?:\/\/[^\s]+(?:preview|jpg|jpeg|png|gif|webp)[^\s]*)/gi;
                 const imageUrls = textContent.match(imageUrlRegex) || [];
                 console.log('Found image URLs:', imageUrls);
                 
