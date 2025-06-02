@@ -183,6 +183,13 @@
             color: #666;
             font-style: italic;
         }
+
+        /* New styles for image handling */
+        .image-preview {
+            max-width: 200px;
+            margin: 10px 0;
+            display: none;
+        }
     </style>
 </head>
 <body>    
@@ -214,6 +221,7 @@
         <button class="copy-btn" id="copy-btn">Copy</button>
     </div>
     <div class="text-container" id="template-text"></div>
+    <img id="image-preview" class="image-preview" alt="Image preview">
 
     <!-- <div class="header-container">
         <h2>Dumb AI Assistant</h2>
@@ -237,6 +245,7 @@
         const uploadBtn = document.getElementById('upload-btn');
         const resetBtn = document.getElementById('reset-btn');
         const uploadStatus = document.getElementById('upload-status');
+        const imagePreview = document.getElementById('image-preview');
         
         // Test button redirect to test.html
         testBtn.addEventListener('click', () => {
@@ -350,25 +359,89 @@
             }
         }
         
-        // Copy button functionality
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(templateText.textContent)
-                .then(() => {
+        // Function to extract image URLs from text
+        function extractImageUrls(text) {
+            const urlRegex = /(https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp))/gi;
+            return text.match(urlRegex) || [];
+        }
+
+        // Function to copy image to clipboard
+        async function copyImageToClipboard(imageUrl) {
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [blob.type]: blob
+                    })
+                ]);
+                
+                return true;
+            } catch (err) {
+                console.error('Failed to copy image:', err);
+                return false;
+            }
+        }
+
+        // Function to copy text to clipboard
+        async function copyTextToClipboard(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+                return false;
+            }
+        }
+
+        // Modified copy button functionality
+        copyBtn.addEventListener('click', async () => {
+            const text = templateText.textContent;
+            const imageUrls = extractImageUrls(text);
+            
+            if (imageUrls.length > 0) {
+                // If there are images, copy the first image
+                const success = await copyImageToClipboard(imageUrls[0]);
+                if (success) {
                     const originalText = copyBtn.textContent;
-                    copyBtn.textContent = "Copied!";
+                    copyBtn.textContent = "Image Copied!";
                     setTimeout(() => {
                         copyBtn.textContent = originalText;
                     }, 2000);
+                    
+                    // Show image preview
+                    imagePreview.src = imageUrls[0];
+                    imagePreview.style.display = 'block';
+                    
                     // Launch ChatGPT mobile app using deep linking
                     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
                         window.location.href = 'chatgpt://';
                     } else if (/Android/i.test(navigator.userAgent)) {
                         window.location.href = 'com.openai.chatgpt://';
                     }
-                })
-                .catch(err => {
-                    console.error('Failed to copy text: ', err);
-                });
+                } else {
+                    alert('Failed to copy image. Falling back to text copy.');
+                    await copyTextToClipboard(text);
+                }
+            } else {
+                // If no images, copy text as before
+                const success = await copyTextToClipboard(text);
+                if (success) {
+                    const originalText = copyBtn.textContent;
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => {
+                        copyBtn.textContent = originalText;
+                    }, 2000);
+                    
+                    // Launch ChatGPT mobile app using deep linking
+                    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                        window.location.href = 'chatgpt://';
+                    } else if (/Android/i.test(navigator.userAgent)) {
+                        window.location.href = 'com.openai.chatgpt://';
+                    }
+                }
+            }
         });
         
         // Socket.io connection handling
