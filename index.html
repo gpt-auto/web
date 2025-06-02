@@ -489,10 +489,6 @@
                 // Tab is visible again
                 isActive = true;
                 updateStatusDisplay(true);
-                // Reconnect socket when becoming visible
-                if (username) {
-                    restartSocketConnection();
-                }
             }
         });
         
