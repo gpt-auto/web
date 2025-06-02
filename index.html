@@ -355,8 +355,8 @@
             try {
                 const textContent = templateText.textContent;
                 
-                // Extract image URLs from the text content
-                const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
+                // Extract image URLs from the text content - updated regex to be more permissive
+                const imageUrlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|preview))/gi;
                 const imageUrls = textContent.match(imageUrlRegex) || [];
                 
                 if (imageUrls.length > 0) {
@@ -365,6 +365,7 @@
                         imageUrls.map(async (imageUrl) => {
                             try {
                                 const response = await fetch(imageUrl);
+                                if (!response.ok) throw new Error('Failed to fetch image');
                                 const blob = await response.blob();
                                 return new ClipboardItem({ [blob.type]: blob });
                             } catch (err) {
@@ -377,12 +378,17 @@
                     // Filter out any failed image fetches
                     const validImageBlobs = imageBlobs.filter(blob => blob !== null);
                     
-                    // Add text as a separate item
-                    const textBlob = new Blob([textContent], { type: 'text/plain' });
-                    validImageBlobs.push(new ClipboardItem({ 'text/plain': textBlob }));
-                    
-                    // Write all items to clipboard
-                    await navigator.clipboard.write(validImageBlobs);
+                    if (validImageBlobs.length > 0) {
+                        // Add text as a separate item
+                        const textBlob = new Blob([textContent], { type: 'text/plain' });
+                        validImageBlobs.push(new ClipboardItem({ 'text/plain': textBlob }));
+                        
+                        // Write all items to clipboard
+                        await navigator.clipboard.write(validImageBlobs);
+                    } else {
+                        // If no valid images were fetched, fall back to text-only copy
+                        await navigator.clipboard.writeText(textContent);
+                    }
                 } else {
                     // If no images, just copy text
                     await navigator.clipboard.writeText(textContent);
