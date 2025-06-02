@@ -49,6 +49,13 @@
             word-break: break-word;
             overflow-x: auto;
         }
+        .text-container img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 4px;
+            display: block;
+        }
         .copy-btn {
             background-color: #4CAF50;
             color: white;
@@ -396,12 +403,32 @@
             });
             
             // Listen for new messages
-            socket.on('new_message', (message) => {
+            socket.on('new_message', async (message) => {
                 if (message && message.originalText) {
                     latestMessage = message.originalText;
-                    /* const aiMessage = message.processedText || 'No AI response available'; */
-                    templateText.textContent = latestMessage;
-                    /* aiText.textContent = aiMessage; */
+                    
+                    // Find image URLs in the message
+                    const imageUrlRegex = /https:\/\/feu\.instructure\.com\/users\/\d+\/files\/\d+\/preview\?verifier=[^"\s]+/g;
+                    const imageUrls = latestMessage.match(imageUrlRegex) || [];
+                    
+                    // Create HTML content with text and images
+                    let htmlContent = latestMessage;
+                    
+                    // Add images below the text
+                    for (const url of imageUrls) {
+                        try {
+                            const response = await fetch(`${apiUrl}/api/fetch-image?url=${encodeURIComponent(url)}`);
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                const imageUrl = URL.createObjectURL(blob);
+                                htmlContent += `\n<img src="${imageUrl}" alt="Image from message">`;
+                            }
+                        } catch (error) {
+                            console.error('Error fetching image:', error);
+                        }
+                    }
+                    
+                    templateText.innerHTML = htmlContent;
                 }
             });
             
