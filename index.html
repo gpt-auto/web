@@ -428,13 +428,9 @@
             socket = io(apiUrl, {
                 transports: ['websocket', 'polling'],
                 reconnection: true,
-                reconnectionAttempts: Infinity,
+                reconnectionAttempts: 5,
                 reconnectionDelay: 1000,
-                reconnectionDelayMax: 5000,
-                timeout: 60000,
-                forceNew: true,
-                keepAlive: true,
-                keepAliveInterval: 30000
+                timeout: 20000
             });
             
             // Connect to the server and join the room
